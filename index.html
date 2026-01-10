@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RuraX | Elite Financial Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --gold-primary: #D4AF37; 
+            --gold-light: #F9E498;
+            --dark-bg: #0A0A0B;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-gold: rgba(212, 175, 55, 0.2);
+        }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--dark-bg); 
+            color: #E2E2E2; 
+            -webkit-font-smoothing: antialiased; 
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1a1a1a 0%, #0a0a0b 100%);
+        }
+        .font-serif { font-family: 'Cinzel', serif; }
+        .gold-text { background: linear-gradient(135deg, #FDE68A 0%, #D4AF37 50%, #B48924 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .premium-card { 
+            background: linear-gradient(145deg, rgba(30, 30, 35, 0.6) 0%, rgba(10, 10, 12, 0.8) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-gold);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .btn-premium { 
+            background: linear-gradient(to right, #B48924, #D4AF37, #F9E498);
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+        .btn-premium:active { transform: scale(0.95); opacity: 0.9; }
+        .input-premium { 
+            background: rgba(255,255,255,0.03) !important; 
+            border: 1px solid rgba(255,255,255,0.08) !important; 
+            color: white !important; 
+            backdrop-filter: blur(4px);
+        }
+        .input-premium:focus { border-color: var(--gold-primary) !important; background: rgba(255,255,255,0.06) !important; }
+        .glass-nav { 
+            background: rgba(10, 10, 11, 0.85); 
+            backdrop-filter: blur(20px); 
+            border-top: 1px solid rgba(255,255,255,0.05); 
+        }
+        .transaction-item {
+            transition: transform 0.2s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .transaction-item:last-child { border-bottom: none; }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Professional Loader -->
+    <div id="init-loader" class="fixed inset-0 z-[1000] bg-[#0A0A0B] flex flex-col items-center justify-center">
+        <div class="relative w-20 h-20 mb-6">
+            <div class="absolute inset-0 border-2 border-amber-500/20 rounded-full"></div>
+            <div class="absolute inset-0 border-t-2 border-amber-500 rounded-full animate-spin"></div>
+        </div>
+        <h2 class="font-serif gold-text text-xl tracking-[0.5em] font-bold">RURAX</h2>
+    </div>
+
+    <div id="app-wrapper" class="max-w-md mx-auto min-h-screen relative flex flex-col">
+        
+        <!-- 1. AUTH VIEW -->
+        <section id="view-auth" class="hidden flex-1 flex flex-col justify-center px-10 py-12 fade-in">
+            <div class="text-center mb-12">
+                <span class="text-[10px] uppercase tracking-[0.6em] text-amber-500/60 font-bold">Established MMXXIV</span>
+                <h1 class="text-6xl font-serif gold-text tracking-tighter mt-2">RuraX</h1>
+                <p class="text-[9px] uppercase tracking-[0.4em] text-slate-500 mt-4">The Private Ledger for High-Net-Worth Assets</p>
+            </div>
+
+            <div class="premium-card p-10 rounded-[3rem] relative">
+                <h2 id="auth-header" class="text-2xl font-bold mb-8 text-center text-white/90 tracking-tight">Access Control</h2>
+                
+                <form id="auth-form" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[9px] text-amber-500 uppercase font-black tracking-widest opacity-70">Identity Email</label>
+                        <input type="email" id="user-email" required class="input-premium w-full p-5 rounded-2xl text-sm" placeholder="elite@rurax.com">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[9px] text-amber-500 uppercase font-black tracking-widest opacity-70">Security Key</label>
+                        <input type="password" id="user-pass" required class="input-premium w-full p-5 rounded-2xl text-sm" placeholder="••••••••">
+                    </div>
+                    <div id="auth-err-msg" class="hidden text-[10px] text-rose-400 bg-rose-500/10 p-4 rounded-xl border border-rose-500/20 text-center font-bold"></div>
+                    <button type="submit" id="auth-submit-btn" class="w-full py-5 btn-premium rounded-2xl uppercase tracking-[0.2em] text-[10px] mt-4">Initialize Authorization</button>
+                </form>
+
+                <div class="mt-10 text-center pt-8 border-t border-white/5">
+                    <button id="auth-mode-toggle" class="text-xs text-slate-400 hover:text-amber-500 transition-colors">
+                        New Client? <span class="text-amber-500 font-bold ml-1">Establish Record</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="hidden fade-in flex-1">
+            <header class="p-8 pt-12 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-serif gold-text tracking-widest">RuraX</h1>
+                    <p id="nav-user-id" class="text-[8px] text-slate-500 uppercase tracking-[0.4em] font-black mt-1">Status: Authenticated</p>
+                </div>
+                <button onclick="triggerLogout()" class="p-3 bg-white/5 rounded-2xl border border-white/10 text-amber-500/80 active:scale-90 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </button>
+            </header>
+
+            <main class="px-6 pb-40">
+                <!-- Portfolio Summary -->
+                <div class="premium-card p-10 rounded-[3rem] mb-12 relative overflow-hidden">
+                    <div class="absolute -right-20 -top-20 w-60 h-60 bg-amber-500/10 blur-[80px] rounded-full"></div>
+                    <p class="text-[9px] text-amber-500/40 uppercase tracking-[0.3em] font-black mb-2">Net Financial Worth</p>
+                    <h2 id="val-net" class="text-5xl font-bold tracking-tighter text-white">₹ 0</h2>
+                    
+                    <div class="grid grid-cols-2 gap-6 mt-10 pt-8 border-t border-white/5">
+                        <div class="space-y-1">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Capital Inflow</p>
+                            <p id="val-get" class="text-emerald-400 font-bold text-xl tracking-tight">₹ 0</p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Capital Outflow</p>
+                            <p id="val-give" class="text-rose-400 font-bold text-xl tracking-tight">₹ 0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 mb-8 px-2">
+                    <h3 class="text-[10px] font-black text-amber-500/30 uppercase tracking-[0.5em] whitespace-nowrap">Asset Ledgers</h3>
+                    <div class="h-px w-full bg-gradient-to-r from-white/5 to-transparent"></div>
+                </div>
+
+                <div id="clients-container" class="space-y-6">
+                    <!-- Dynamic -->
+                </div>
+            </main>
+
+            <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-8 glass-nav z-50 rounded-t-[3rem]">
+                <button onclick="openModal('modal-add-client')" class="btn-premium w-full py-5 rounded-2xl uppercase tracking-[0.2em] text-[10px] shadow-2xl">Register High-Value Client</button>
+            </nav>
+        </section>
+
+        <!-- 3. DETAIL VIEW -->
+        <section id="view-ledger" class="hidden fade-in flex-1 pb-40">
+            <header class="p-8 bg-[#0A0A0B] sticky top-0 z-50 flex items-center gap-6 border-b border-white/5">
+                <button onclick="navigateTo('view-dashboard')" class="w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all">
+                    <svg width="22" height="22" fill="none" stroke="#D4AF37" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <div>
+                    <h2 id="active-client-title" class="font-bold text-xl tracking-tight text-white/90">Loading...</h2>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                        <p id="active-client-sub" class="text-[9px] text-slate-500 uppercase tracking-widest font-black">Identity Validated</p>
+                    </div>
+                </div>
+            </header>
+
+            <div id="transactions-container" class="p-8 space-y-4"></div>
+
+            <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-8 glass-nav flex gap-4 z-50 rounded-t-[3rem]">
+                <button onclick="initTxFlow('GIVE')" class="flex-1 bg-rose-500/10 text-rose-500 border border-rose-500/20 py-5 rounded-2xl font-black text-[9px] tracking-widest uppercase active:scale-95 transition-all">DEBIT</button>
+                <button onclick="initTxFlow('GET')" class="flex-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 py-5 rounded-2xl font-black text-[9px] tracking-widest uppercase active:scale-95 transition-all">CREDIT</button>
+            </nav>
+        </section>
+    </div>
+
+    <!-- MODAL ENGINE -->
+    <div id="modal-overlay" class="fixed inset-0 z-[100] hidden items-end sm:items-center justify-center p-6 bg-black/95 backdrop-blur-sm">
+        <div class="absolute inset-0" onclick="closeActiveModals()"></div>
+        
+        <!-- Modal: Add Client -->
+        <div id="modal-add-client" class="relative z-[110] w-full max-w-sm premium-card rounded-[3rem] p-10 hidden fade-in">
+            <h3 class="text-xl font-serif gold-text mb-8 text-center uppercase tracking-widest">Client Registration</h3>
+            <form onsubmit="handleClientCreation(event)" class="space-y-6">
+                <input type="text" id="inp-c-name" required placeholder="Legal Name" class="input-premium w-full p-5 rounded-2xl text-sm font-medium">
+                <input type="tel" id="inp-c-phone" placeholder="Contact Identity (Reference)" class="input-premium w-full p-5 rounded-2xl text-sm font-medium">
+                <button type="submit" class="w-full btn-premium py-5 rounded-2xl uppercase text-[10px] tracking-widest mt-4">Confirm Record</button>
+            </form>
+        </div>
+
+        <!-- Modal: Add Transaction -->
+        <div id="modal-tx-entry" class="relative z-[110] w-full max-w-sm premium-card rounded-[3rem] p-10 hidden fade-in text-center">
+            <h3 id="tx-entry-title" class="text-[10px] font-black text-amber-500/40 uppercase tracking-[0.4em] mb-12">Authorization Request</h3>
+            <div class="mb-10">
+                <span class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Fiat Value (INR)</span>
+                <input type="number" id="inp-tx-amount" required placeholder="0.00" class="bg-transparent text-6xl font-black w-full text-center outline-none text-white mt-4 border-b border-white/5 pb-4">
+            </div>
+            <input type="text" id="inp-tx-note" placeholder="Transaction Particulars" class="input-premium w-full p-5 rounded-2xl text-sm text-center mb-10">
+            <div class="flex gap-4">
+                <button type="button" onclick="closeActiveModals()" class="flex-1 text-slate-500 font-black text-[9px] tracking-widest uppercase">Dismiss</button>
+                <button id="btn-tx-confirm" class="flex-1 btn-premium py-5 rounded-2xl text-[9px] tracking-widest uppercase">Validate</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBUCZ42OzkKjJgwTYLA-LY2fj6KtViSBBs",
+          authDomain: "khata-41719.firebaseapp.com",
+          databaseURL: "https://khata-41719-default-rtdb.firebaseio.com",
+          projectId: "khata-41719",
+          storageBucket: "khata-41719.firebasestorage.app",
+          messagingSenderId: "197866577320",
+          appId: "1:197866577320:web:e6b0208809fd251d51d19d",
+          measurementId: "G-HGKKV96P6V"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let activeUser = null;
+        let authState = 'signin';
+        let clientsCache = [];
+        let currentActiveClientId = null;
+
+        onAuthStateChanged(auth, (user) => {
+            activeUser = user;
+            setTimeout(() => { document.getElementById('init-loader').style.opacity = '0'; setTimeout(() => document.getElementById('init-loader').style.display='none', 500); }, 800);
+            if (user) {
+                document.getElementById('nav-user-id').innerText = `Elite Session: ${user.email.split('@')[0].toUpperCase()}`;
+                navigateTo('view-dashboard');
+                initDataSync();
+            } else {
+                navigateTo('view-auth');
+            }
+        });
+
+        // AUTH SYSTEM
+        const modeBtn = document.getElementById('auth-mode-toggle');
+        modeBtn.onclick = () => {
+            authState = (authState === 'signin') ? 'signup' : 'signin';
+            document.getElementById('auth-header').innerText = (authState === 'signin') ? 'Access Control' : 'Record Establishment';
+            document.getElementById('auth-submit-btn').innerText = (authState === 'signin') ? 'Initialize Authorization' : 'Create Credentials';
+            modeBtn.innerHTML = (authState === 'signin') ? 'New Client? <span class="text-amber-500 font-bold ml-1">Establish Record</span>' : 'Authorized Already? <span class="text-amber-500 font-bold ml-1">Secure Sign-In</span>';
+        };
+
+        document.getElementById('auth-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('user-email').value;
+            const pass = document.getElementById('user-pass').value;
+            const btn = document.getElementById('auth-submit-btn');
+            const errBox = document.getElementById('auth-err-msg');
+
+            errBox.classList.add('hidden');
+            btn.disabled = true; btn.innerText = "AUTHENTICATING...";
+
+            try {
+                if (authState === 'signin') await signInWithEmailAndPassword(auth, email, pass);
+                else await createUserWithEmailAndPassword(auth, email, pass);
+            } catch (err) {
+                errBox.innerText = "Security Alert: " + err.message.replace("Firebase: ", "");
+                errBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false; btn.innerText = (authState === 'signin') ? 'Initialize Authorization' : 'Create Credentials';
+            }
+        };
+
+        window.triggerLogout = () => signOut(auth);
+
+        // DATA SYNC
+        function initDataSync() {
+            if (!activeUser) return;
+            onValue(ref(db, `users/${activeUser.uid}/clients`), (snap) => {
+                const data = snap.val();
+                clientsCache = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
+                updateDashboardUI();
+                if (currentActiveClientId) updateLedgerUI();
+            });
+        }
+
+        window.navigateTo = (id) => {
+            ['view-auth', 'view-dashboard', 'view-ledger'].forEach(v => document.getElementById(v).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'view-dashboard') currentActiveClientId = null;
+        };
+
+        function updateDashboardUI() {
+            const container = document.getElementById('clients-container');
+            let rec = 0, pay = 0;
+            container.innerHTML = clientsCache.length ? '' : `
+                <div class="text-center py-24 opacity-10 uppercase tracking-[0.5em] text-[10px] font-black border-2 border-dashed border-white/5 rounded-[3rem]">
+                    Private Vault Empty
+                </div>`;
+
+            clientsCache.forEach(c => {
+                const bal = c.balance || 0;
+                if (bal >= 0) rec += bal; else pay += Math.abs(bal);
+                const card = document.createElement('div');
+                card.className = "premium-card p-6 rounded-3xl flex justify-between items-center active:scale-[0.97] transition-all cursor-pointer";
+                card.onclick = () => { currentActiveClientId = c.id; navigateTo('view-ledger'); updateLedgerUI(); };
+                card.innerHTML = `
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 bg-amber-500/5 border border-amber-500/20 rounded-2xl flex items-center justify-center font-serif text-xl gold-text font-bold shadow-inner">${c.name.charAt(0)}</div>
+                        <div>
+                            <h4 class="font-bold text-base text-white/90 tracking-tight">${c.name}</h4>
+                            <p class="text-[9px] text-slate-500 uppercase font-black tracking-widest mt-0.5">${Object.keys(c.transactions || {}).length} Authorized Records</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg ${bal >= 0 ? 'text-emerald-400' : 'text-rose-400'}">₹${Math.abs(bal).toLocaleString('en-IN')}</p>
+                        <p class="text-[8px] text-slate-600 uppercase font-bold tracking-tighter">${bal >= 0 ? 'Capital Due' : 'Obligation'}</p>
+                    </div>`;
+                container.appendChild(card);
+            });
+            document.getElementById('val-net').innerText = `₹${(rec - pay).toLocaleString('en-IN')}`;
+            document.getElementById('val-get').innerText = `₹${rec.toLocaleString('en-IN')}`;
+            document.getElementById('val-give').innerText = `₹${pay.toLocaleString('en-IN')}`;
+        }
+
+        function updateLedgerUI() {
+            const client = clientsCache.find(cl => cl.id === currentActiveClientId);
+            if (!client) return;
+            document.getElementById('active-c
