@@ -59,7 +59,6 @@
         .fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: var(--dark-bg); }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
@@ -123,7 +122,6 @@
             </header>
 
             <main class="px-6 pb-40">
-                <!-- Portfolio Summary -->
                 <div class="premium-card p-10 rounded-[3rem] mb-12 relative overflow-hidden">
                     <div class="absolute -right-20 -top-20 w-60 h-60 bg-amber-500/10 blur-[80px] rounded-full"></div>
                     <p class="text-[9px] text-amber-500/40 uppercase tracking-[0.3em] font-black mb-2">Net Financial Worth</p>
@@ -146,9 +144,7 @@
                     <div class="h-px w-full bg-gradient-to-r from-white/5 to-transparent"></div>
                 </div>
 
-                <div id="clients-container" class="space-y-6">
-                    <!-- Dynamic -->
-                </div>
+                <div id="clients-container" class="space-y-6"></div>
             </main>
 
             <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-8 glass-nav z-50 rounded-t-[3rem]">
@@ -170,9 +166,7 @@
                     </div>
                 </div>
             </header>
-
             <div id="transactions-container" class="p-8 space-y-4"></div>
-
             <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-8 glass-nav flex gap-4 z-50 rounded-t-[3rem]">
                 <button onclick="initTxFlow('GIVE')" class="flex-1 bg-rose-500/10 text-rose-500 border border-rose-500/20 py-5 rounded-2xl font-black text-[9px] tracking-widest uppercase active:scale-95 transition-all">DEBIT</button>
                 <button onclick="initTxFlow('GET')" class="flex-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 py-5 rounded-2xl font-black text-[9px] tracking-widest uppercase active:scale-95 transition-all">CREDIT</button>
@@ -184,7 +178,6 @@
     <div id="modal-overlay" class="fixed inset-0 z-[100] hidden items-end sm:items-center justify-center p-6 bg-black/95 backdrop-blur-sm">
         <div class="absolute inset-0" onclick="closeActiveModals()"></div>
         
-        <!-- Modal: Add Client -->
         <div id="modal-add-client" class="relative z-[110] w-full max-w-sm premium-card rounded-[3rem] p-10 hidden fade-in">
             <h3 class="text-xl font-serif gold-text mb-8 text-center uppercase tracking-widest">Client Registration</h3>
             <form onsubmit="handleClientCreation(event)" class="space-y-6">
@@ -194,7 +187,6 @@
             </form>
         </div>
 
-        <!-- Modal: Add Transaction -->
         <div id="modal-tx-entry" class="relative z-[110] w-full max-w-sm premium-card rounded-[3rem] p-10 hidden fade-in text-center">
             <h3 id="tx-entry-title" class="text-[10px] font-black text-amber-500/40 uppercase tracking-[0.4em] mb-12">Authorization Request</h3>
             <div class="mb-10">
@@ -210,9 +202,9 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue, update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBUCZ42OzkKjJgwTYLA-LY2fj6KtViSBBs",
@@ -234,9 +226,25 @@
         let clientsCache = [];
         let currentActiveClientId = null;
 
+        // Force hide loader after 5 seconds if Firebase hangs
+        const forceHideLoader = setTimeout(() => {
+            const loader = document.getElementById('init-loader');
+            if(loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }
+        }, 5000);
+
         onAuthStateChanged(auth, (user) => {
+            clearTimeout(forceHideLoader);
             activeUser = user;
-            setTimeout(() => { document.getElementById('init-loader').style.opacity = '0'; setTimeout(() => document.getElementById('init-loader').style.display='none', 500); }, 800);
+            
+            const loader = document.getElementById('init-loader');
+            if(loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 500);
+            }
+
             if (user) {
                 document.getElementById('nav-user-id').innerText = `Elite Session: ${user.email.split('@')[0].toUpperCase()}`;
                 navigateTo('view-dashboard');
@@ -248,55 +256,69 @@
 
         // AUTH SYSTEM
         const modeBtn = document.getElementById('auth-mode-toggle');
-        modeBtn.onclick = () => {
-            authState = (authState === 'signin') ? 'signup' : 'signin';
-            document.getElementById('auth-header').innerText = (authState === 'signin') ? 'Access Control' : 'Record Establishment';
-            document.getElementById('auth-submit-btn').innerText = (authState === 'signin') ? 'Initialize Authorization' : 'Create Credentials';
-            modeBtn.innerHTML = (authState === 'signin') ? 'New Client? <span class="text-amber-500 font-bold ml-1">Establish Record</span>' : 'Authorized Already? <span class="text-amber-500 font-bold ml-1">Secure Sign-In</span>';
-        };
+        if(modeBtn) {
+            modeBtn.onclick = () => {
+                authState = (authState === 'signin') ? 'signup' : 'signin';
+                document.getElementById('auth-header').innerText = (authState === 'signin') ? 'Access Control' : 'Record Establishment';
+                document.getElementById('auth-submit-btn').innerText = (authState === 'signin') ? 'Initialize Authorization' : 'Create Credentials';
+                modeBtn.innerHTML = (authState === 'signin') ? 'New Client? <span class="text-amber-500 font-bold ml-1">Establish Record</span>' : 'Authorized Already? <span class="text-amber-500 font-bold ml-1">Secure Sign-In</span>';
+            };
+        }
 
-        document.getElementById('auth-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('user-email').value;
-            const pass = document.getElementById('user-pass').value;
-            const btn = document.getElementById('auth-submit-btn');
-            const errBox = document.getElementById('auth-err-msg');
+        const authForm = document.getElementById('auth-form');
+        if(authForm) {
+            authForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('user-email').value;
+                const pass = document.getElementById('user-pass').value;
+                const btn = document.getElementById('auth-submit-btn');
+                const errBox = document.getElementById('auth-err-msg');
 
-            errBox.classList.add('hidden');
-            btn.disabled = true; btn.innerText = "AUTHENTICATING...";
+                errBox.classList.add('hidden');
+                btn.disabled = true; btn.innerText = "AUTHENTICATING...";
 
-            try {
-                if (authState === 'signin') await signInWithEmailAndPassword(auth, email, pass);
-                else await createUserWithEmailAndPassword(auth, email, pass);
-            } catch (err) {
-                errBox.innerText = "Security Alert: " + err.message.replace("Firebase: ", "");
-                errBox.classList.remove('hidden');
-            } finally {
-                btn.disabled = false; btn.innerText = (authState === 'signin') ? 'Initialize Authorization' : 'Create Credentials';
-            }
-        };
+                try {
+                    if (authState === 'signin') await signInWithEmailAndPassword(auth, email, pass);
+                    else await createUserWithEmailAndPassword(auth, email, pass);
+                } catch (err) {
+                    errBox.innerText = "Security Alert: " + err.message.replace("Firebase: ", "");
+                    errBox.classList.remove('hidden');
+                } finally {
+                    btn.disabled = false; btn.innerText = (authState === 'signin') ? 'Initialize Authorization' : 'Create Credentials';
+                }
+            };
+        }
 
         window.triggerLogout = () => signOut(auth);
 
-        // DATA SYNC
         function initDataSync() {
             if (!activeUser) return;
-            onValue(ref(db, `users/${activeUser.uid}/clients`), (snap) => {
+            const clientsRef = ref(db, `users/${activeUser.uid}/clients`);
+            onValue(clientsRef, (snap) => {
                 const data = snap.val();
                 clientsCache = data ? Object.keys(data).map(k => ({ id: k, ...data[k] })) : [];
                 updateDashboardUI();
                 if (currentActiveClientId) updateLedgerUI();
+            }, (error) => {
+                console.error("Data Sync Error:", error);
             });
         }
 
         window.navigateTo = (id) => {
-            ['view-auth', 'view-dashboard', 'view-ledger'].forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
+            const views = ['view-auth', 'view-dashboard', 'view-ledger'];
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if(el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(id);
+            if(target) target.classList.remove('hidden');
             if (id === 'view-dashboard') currentActiveClientId = null;
         };
 
         function updateDashboardUI() {
             const container = document.getElementById('clients-container');
+            if(!container) return;
+            
             let rec = 0, pay = 0;
             container.innerHTML = clientsCache.length ? '' : `
                 <div class="text-center py-24 opacity-10 uppercase tracking-[0.5em] text-[10px] font-black border-2 border-dashed border-white/5 rounded-[3rem]">
@@ -331,4 +353,73 @@
         function updateLedgerUI() {
             const client = clientsCache.find(cl => cl.id === currentActiveClientId);
             if (!client) return;
-            document.getElementById('active-c
+            document.getElementById('active-client-title').innerText = client.name;
+            const container = document.getElementById('transactions-container');
+            if(!container) return;
+
+            const txs = client.transactions ? Object.values(client.transactions).sort((a,b) => b.time - a.time) : [];
+            container.innerHTML = txs.length ? '' : '<div class="text-center py-20 opacity-10 text-[10px] uppercase font-bold tracking-[0.3em]">No Recorded History</div>';
+            txs.forEach(t => {
+                const row = document.createElement('div');
+                row.className = "premium-card p-5 rounded-2xl flex justify-between items-center transaction-item border-l-4 " + (t.type === 'GET' ? 'border-emerald-500/40' : 'border-rose-500/40');
+                row.innerHTML = `
+                    <div class="max-w-[65%]">
+                        <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest mb-1">${t.date}</p>
+                        <p class="text-[11px] text-white/70 font-medium leading-relaxed">${t.note}</p>
+                    </div>
+                    <p class="font-black text-base ${t.type === 'GET' ? 'text-emerald-400' : 'text-rose-400'}">${t.type === 'GET' ? '+' : '-'} ₹${t.amount.toLocaleString('en-IN')}</p>`;
+                container.appendChild(row);
+            });
+        }
+
+        window.openModal = (id) => { 
+            const overlay = document.getElementById('modal-overlay');
+            const target = document.getElementById(id);
+            if(overlay && target) {
+                overlay.classList.remove('hidden'); 
+                overlay.classList.add('flex'); 
+                target.classList.remove('hidden'); 
+            }
+        };
+        
+        window.closeActiveModals = () => { 
+            document.getElementById('modal-overlay').classList.add('hidden'); 
+            document.getElementById('modal-add-client').classList.add('hidden'); 
+            document.getElementById('modal-tx-entry').classList.add('hidden'); 
+        };
+
+        window.handleClientCreation = async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('inp-c-name').value;
+            const phone = document.getElementById('inp-c-phone').value;
+            if(!name) return;
+            await push(ref(db, `users/${activeUser.uid}/clients`), { name, phone, balance: 0, time: Date.now() });
+            closeActiveModals(); e.target.reset();
+        };
+
+        window.initTxFlow = (type) => {
+            document.getElementById('tx-entry-title').innerText = (type === 'GET') ? 'CREDIT AUTHORIZATION' : 'DEBIT AUTHORIZATION';
+            document.getElementById('inp-tx-amount').value = '';
+            document.getElementById('inp-tx-note').value = '';
+            document.getElementById('btn-tx-confirm').onclick = () => authorizeTransaction(type);
+            openModal('modal-tx-entry');
+        };
+
+        async function authorizeTransaction(type) {
+            const amountInput = document.getElementById('inp-tx-amount');
+            const amount = parseFloat(amountInput.value);
+            const note = document.getElementById('inp-tx-note').value || 'Authorized Entry';
+            if (!amount || !currentActiveClientId) return;
+            
+            const client = clientsCache.find(c => c.id === currentActiveClientId);
+            const dateStr = new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            
+            await push(ref(db, `users/${activeUser.uid}/clients/${currentActiveClientId}/transactions`), { amount, type, note, date: dateStr, time: Date.now() });
+            const newBal = (type === 'GET') ? (client.balance || 0) + amount : (client.balance || 0) - amount;
+            await update(ref(db, `users/${activeUser.uid}/clients/${currentActiveClientId}`), { balance: newBal });
+            closeActiveModals();
+        }
+    </script>
+</body>
+</html>
+
